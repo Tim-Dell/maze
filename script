@@ -1,0 +1,160 @@
+##----- Importation des Modules -----##
+from tkinter import *
+from random import *
+
+##----- Variables globales -----##
+c = 30                          
+n = 4                          
+
+
+fen = Tk()
+fen.title('Maze')
+
+                ##----- Création des boutons -----##
+bouton_quitter = Button(fen, text='Quitter', command=fen.destroy)
+bouton_quitter.grid(row = 1, column = 1, sticky=W+E, padx=3, pady=3)
+    
+def creaboard(n,c):    ##----- Création du caneva -----##
+    global board
+    board = Canvas(fen, width = n*c+2, height = n*c+2, bg = 'white')
+    board.grid(row = 0, column = 0, columnspan=2, padx=3, pady=3)
+    edge = board.create_rectangle(2,2,n*c+2,n*c+2)
+
+
+#def creatiles(n):
+ #   tiles = []
+  #  for i in range (n*n):
+   #     tiles.append(i)
+    #return tiles
+
+def vertiwalls(c,n):
+    vertical = []
+    for ligne in range(n):         
+        for colonne in range(1,n):    
+            vertical.append(board.create_line\
+                    (c*colonne+2,ligne*c+2,c*colonne+2,ligne*c+2+c ))
+    
+    return vertical
+
+def horiwalls(c,n):        
+    horizontal = []   
+    for ligne in range(1,n):         
+        for colonne in range(n):    
+            horizontal.append(board.create_line\
+                    (c*colonne+2,ligne*c+2,c*colonne+2+c,ligne*c+2 ))
+    
+    return horizontal
+
+def chooseinit(n):
+    begin = randint(0,n-1)*n
+    return begin
+
+def initmaze(v,h,begin,n,c):    #to be added, choose end cell
+    walls = []
+    vtiles = []
+    walls2 = []
+    
+    vtiles.append(begin)
+    
+    walls.append( v[begin-begin//n] ) #adds right wall
+    walls2.append(v[begin-begin//n] )
+    if begin > n:
+        walls.append( h[begin-4] )    #adds top wall
+        walls2.append(h[begin-4] )
+    if begin < n*n-n:                       
+        walls.append( h[ begin ] )      #adds bottom wall
+        walls2.append(h[ begin ] )
+    
+    initsq = board.create_rectangle(2, (begin//n)*c+3, c+1, (begin//n)*c+c+1, \
+                                    outline = 'light coral', fill = 'light coral')
+    return vtiles,walls,walls2
+
+def choosewall(w):
+    x = randint(0,len(w)-1)
+    return x
+
+def tileman(vt,w,x,begin,n):                 
+
+    "----------horizontal---------"
+        
+    if w[x] >= (n*n-n)+2:
+        if w[x]-((n*n-n)+2) in vt and w[x]-((n*n-n)+2) +n in vt: #vérifie si deux cases ds vt
+            tile = None
+                
+        elif w[x]-((n*n-n)+2) in vt:      #revérifie si une case ds vt
+            board.delete(w[x])            #crée un passage entre deux cases
+            tile = w[x]+n-((n*n-n)+2)
+            vt.append(tile)               #ajoute l'autre case ds vt
+                                
+        else:                             #forcement une case déjà visitée.
+            board.delete(w[x])
+            tile = w[x]-((n*n-n)+2)
+            vt.append(tile)
+                        
+    "----------vertical----------"
+        
+    if w[x] < (n*n-n)+2:
+        if (w[x]-2) //(n-1) in vt and ((w[x]-2) //(n-1))+1 in vt:
+            tile = None
+            
+        elif (w[x]-2) //(n-1) in vt:
+            board.delete(w[x])
+            tile = ((w[x]-2) //(n-1))+1
+            vt.append(tile)
+            
+        else:
+            board.delete(w[x])
+            tile = (w[x]-2) //(n-1)
+            vt.append(tile)
+    
+    return tile 
+    
+
+def wallman(v,h,w,w2,t,x,n):
+
+    del w[x]
+    
+    if t is not None:
+        if t < n*n-n and h[t] not in w2:    #verifie exception
+            w.append(h[t])          #bottom wall
+            w2.append(h[t])
+        
+        if t >= n and h[t-4] not in w2:
+            w.append(h[t-4])        #top wall
+            w2.append(h[t-4])
+
+        ###--###
+
+        if t%n != 0 and v[t-(t//n)-1] not in w2:
+            w.append(v[t-(t//n)-1])  #left wall
+            w2.append(v[t-(t//n)-1])
+
+        
+        if (t+1)%n != 0 and v[t-(t//n)] not in w2:
+            w.append(v[t-(t//n)])    #right wall
+            w2.append(v[t-(t//n)])
+
+    return w,w2
+
+def mazegen(n,c):
+
+    creaboard(n,c)
+    v = vertiwalls(c,n)
+    h = horiwalls(c,n)
+    begin = chooseinit(n)
+    vtiles,walls,walls2 = initmaze (v,h,begin,n,c)
+
+    while len(walls) > 0:
+        tile = tileman(vtiles,walls,choosewall(walls),begin,n)
+        walls,walls2 = wallman(v,h,walls,walls2,tile,choosewall(walls),n)
+        print(len(walls),tile)
+   
+
+
+##----- Programme principal -----##
+
+
+mazegen(n,c)
+
+        
+fen.mainloop()               
