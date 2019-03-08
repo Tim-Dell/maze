@@ -4,7 +4,7 @@ from random import *
 
 ##----- Variables globales -----##
 c = 30                          
-n = 4                          
+n = 4                        
 
 
 fen = Tk()
@@ -58,9 +58,9 @@ def initmaze(v,h,begin,n,c):    #to be added, choose end cell
     
     walls.append( v[begin-begin//n] ) #adds right wall
     walls2.append(v[begin-begin//n] )
-    if begin > n:
-        walls.append( h[begin-4] )    #adds top wall
-        walls2.append(h[begin-4] )
+    if begin >= n:
+        walls.append( h[begin-n] )    #adds top wall
+        walls2.append(h[begin-n] )
     if begin < n*n-n:                       
         walls.append( h[ begin ] )      #adds bottom wall
         walls2.append(h[ begin ] )
@@ -71,7 +71,9 @@ def initmaze(v,h,begin,n,c):    #to be added, choose end cell
 
 def choosewall(w):
     x = randint(0,len(w)-1)
+    print ("wx",w[x])
     return x
+    
 
 def tileman(vt,w,x,begin,n):                 
 
@@ -119,9 +121,9 @@ def wallman(v,h,w,w2,t,x,n):
             w.append(h[t])          #bottom wall
             w2.append(h[t])
         
-        if t >= n and h[t-4] not in w2:
-            w.append(h[t-4])        #top wall
-            w2.append(h[t-4])
+        if t >= n and h[t-n] not in w2:
+            w.append(h[t-n])        #top wall
+            w2.append(h[t-n])
 
         ###--###
 
@@ -145,9 +147,13 @@ def mazegen(n,c):
     vtiles,walls,walls2 = initmaze (v,h,begin,n,c)
 
     while len(walls) > 0:
-        tile = tileman(vtiles,walls,choosewall(walls),begin,n)
-        walls,walls2 = wallman(v,h,walls,walls2,tile,choosewall(walls),n)
-        print(len(walls),tile)
+        choicew = choosewall(walls)
+        tile = tileman(vtiles,walls,choicew,begin,n)
+        walls,walls2 = wallman(v,h,walls,walls2,tile,choicew,n)
+        print("w",walls)
+        print ("w2",walls2)
+        print ("t",tile)
+        print()
    
 
 
@@ -157,4 +163,4 @@ def mazegen(n,c):
 mazegen(n,c)
 
         
-fen.mainloop()               
+fen.mainloop()
