@@ -12,7 +12,14 @@ def creaboard(n,c):    ##----- Création du caneva -----##
 def mazesize():
     str_n = size_form.get()
     n = int(str_n)
-    c = 20
+    
+    if n <= 15:
+        c = 30
+    elif n <= 30:
+        c = 20
+    elif n <= 60:
+        c = 10
+        
     return n,c
                 
 
