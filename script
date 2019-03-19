@@ -2,24 +2,19 @@
 from tkinter import *
 from random import *
 
-##----- Variables globales -----##
-c = 20                         
-n = 30                      
-
-
-fen = Tk()
-fen.title('Maze')
-
-                ##----- Création des boutons -----##
-bouton_quitter = Button(fen, text='Quitter', command=fen.destroy)
-bouton_quitter.grid(row = 1, column = 1, sticky=W+E, padx=3, pady=3)
-
     
 def creaboard(n,c):    ##----- Création du caneva -----##
     global board
     board = Canvas(fen, width = n*c+2, height = n*c+2, bg = 'white')
-    board.grid(row = 0, column = 0, columnspan=2, padx=3, pady=3)
+    board.grid(row = 0, column = 0, rowspan=4, padx=3, pady=3)
     edge = board.create_rectangle(2,2,n*c+2,n*c+2)
+
+def mazesize():
+    str_n = size_form.get()
+    n = int(str_n)
+    c = 20
+    return n,c
+                
 
 def vertiwalls(c,n):
     vertical = []
@@ -131,8 +126,9 @@ def wallman(v,h,w,w2,t,x,n):
 
     return w,w2
 
-def mazegen(n,c):
-
+def mazegen():
+    n,c = mazesize()
+    ADD.configure( height = n*c-80)
     creaboard(n,c)
     v = vertiwalls(c,n)
     h = horiwalls(c,n)
@@ -143,14 +139,30 @@ def mazegen(n,c):
         choicew = choosewall(walls)
         tile = tileman(vtiles,walls,choicew,n)
         walls,walls2 = wallman(v,h,walls,walls2,tile,choicew,n)
+        
+def fengen():
+    global fen
+    global size_form
+    global ADD
+    fen = Tk()
+    fen.title('Maze')
+    
+    bouton_gen = Button(fen, text = "Generate", command = mazegen)
+    bouton_gen.grid(row = 0, column = 1, sticky=W+E, padx=3, pady=3)
 
+    size_form = Entry(fen, textvariable=StringVar())
+    size_form.grid(row = 1, column = 1, sticky=W+E, padx=3, pady=3)
+
+    ADD = Canvas(fen, width = 125, height = 200, bg = 'white')
+    ADD.grid(row = 2, column = 1, padx=3, pady=3)
+
+    bouton_quitter = Button(fen, text='Quitter', command=fen.destroy)
+    bouton_quitter.grid(row = 3, column = 1, sticky=W+E, padx=3, pady=3)
+
+
+    fen.mainloop()
 
 
 ##----- Programme principal -----##
 
-
-mazegen(n,c)
-
-        
-fen.mainloop()
-
+fengen()
