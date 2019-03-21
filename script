@@ -13,12 +13,14 @@ def mazesize():
     str_n = size_form.get()
     n = int(str_n)
     
-    if n <= 15:
+    if 4 < n <= 15:
         c = 30
-    elif n <= 30:
+    elif 4 < n <= 30:
         c = 20
-    elif n <= 60:
+    elif 4 < n <= 80:
         c = 10
+    else:
+        ADD.itemconfigure(scrolltxt, text = 'OUPS ! Il Faut Saisir Un Nombre Entier Entre 5 Et 80')
         
     return n,c
                 
@@ -62,7 +64,10 @@ def initmaze(v,h,begin,n,c):    #to be added, choose end cell
         walls2.append(h[ begin ] )
     
     initsq = board.create_rectangle(2, (begin//n)*c+3, c+1, (begin//n)*c+c+1, \
-                                    outline = 'light coral', fill = 'light coral')
+                                    outline = 'light pink', fill = 'light pink')
+    alt = randint(0,n-1)*n
+    endsq = board.create_rectangle(n*c-c+3, (alt//n)*c+3, n*c+3, (alt//n)*c+c+1, \
+                                    outline = 'pale green', fill = 'pale green')
     return vtiles,walls,walls2
 
 def choosewall(w):
@@ -146,6 +151,25 @@ def mazegen():
         choicew = choosewall(walls)
         tile = tileman(vtiles,walls,choicew,n)
         walls,walls2 = wallman(v,h,walls,walls2,tile,choicew,n)
+
+def moveobj(anim,x,y):
+    d = 1
+    XO = x-d
+    if XO < -200:
+        XO += 500
+    ADD.coords(anim,XO,y )                                                                   
+    fen.after(20, lambda: moveobj(anim,XO,y))
+
+def ADDroll():
+    
+    ADD.create_text(100, 10, text='- - - - - - - -', \
+                       fill='black', font='System 30')
+    scrolltxt = ADD.create_text(300, 30, text='Entrer La Taille Du Labyrinthe Ou La Commande', \
+                       fill='black', font='System 10')
+    ADD.create_text(100, 50, text='- - - - - - - -', \
+                       fill='black', font='System 30')
+    moveobj(scrolltxt,300,30)
+    
         
 def fengen():
     global fen
@@ -162,6 +186,7 @@ def fengen():
 
     ADD = Canvas(fen, width = 125, height = 200, bg = 'white')
     ADD.grid(row = 2, column = 1, padx=3, pady=3)
+    ADDroll()
 
     bouton_quitter = Button(fen, text='Quitter', command=fen.destroy)
     bouton_quitter.grid(row = 3, column = 1, sticky=W+E, padx=3, pady=3)
@@ -170,6 +195,9 @@ def fengen():
     fen.mainloop()
 
 
+
+
 ##----- Programme principal -----##
 
 fengen()
+
