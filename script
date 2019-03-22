@@ -52,6 +52,9 @@ def initmaze(v,h,begin,n,c):    #to be added, choose end cell
     vtiles = []
     walls2 = []
     
+    vertif = []
+    horif = []
+    
     vtiles.append(begin)
     
     walls.append( v[begin-begin//n] ) #adds right wall
@@ -65,10 +68,10 @@ def initmaze(v,h,begin,n,c):    #to be added, choose end cell
     
     initsq = board.create_rectangle(2, (begin//n)*c+3, c+1, (begin//n)*c+c+1, \
                                     outline = 'light pink', fill = 'light pink')
-    alt = randint(0,n-1)*n
-    endsq = board.create_rectangle(n*c-c+3, (alt//n)*c+3, n*c+3, (alt//n)*c+c+1, \
+    end = randint(0,n-1)*n
+    endsq = board.create_rectangle(n*c-c+3, (end//n)*c+3, n*c+3, (end//n)*c+c+1, \
                                     outline = 'pale green', fill = 'pale green')
-    return vtiles,walls,walls2
+    return vtiles,walls,walls2, vertif, horif
 
 def choosewall(w):
     x = randint(0,len(w)-1)
@@ -112,7 +115,13 @@ def tileman(vt,w,x,n):
     return tile 
     
 
-def wallman(v,h,w,w2,t,x,n):
+def wallman(v,h,w,w2,t,x,n,vertif,horif):
+
+    if t is None:
+        if w[x] >= (n*n-n)+2:
+            horif.append(w[x])
+        else:
+            vertif.append(w[x])
 
     del w[x]
     
@@ -136,7 +145,7 @@ def wallman(v,h,w,w2,t,x,n):
             w.append(v[t-(t//n)])    #right wall
             w2.append(v[t-(t//n)])
 
-    return w,w2
+    return w,w2,vertif,horif
 
 def mazegen():
     n,c = mazesize()
@@ -145,12 +154,14 @@ def mazegen():
     v = vertiwalls(c,n)
     h = horiwalls(c,n)
     begin = chooseinit(n)
-    vtiles,walls,walls2 = initmaze (v,h,begin,n,c)
+    vtiles,walls,walls2, vertif, horif = initmaze (v,h,begin,n,c)
 
     while len(walls) > 0:
         choicew = choosewall(walls)
         tile = tileman(vtiles,walls,choicew,n)
-        walls,walls2 = wallman(v,h,walls,walls2,tile,choicew,n)
+        walls,walls2,vertif,horif= wallman(v,h,walls,walls2,tile,choicew,n,vertif, horif)
+
+    
 
 def moveobj(anim,x,y):
     d = 1
@@ -161,6 +172,7 @@ def moveobj(anim,x,y):
     fen.after(20, lambda: moveobj(anim,XO,y))
 
 def ADDroll():
+    global scrolltxt
     
     ADD.create_text(100, 10, text='- - - - - - - -', \
                        fill='black', font='System 30')
@@ -169,6 +181,18 @@ def ADDroll():
     ADD.create_text(100, 50, text='- - - - - - - -', \
                        fill='black', font='System 30')
     moveobj(scrolltxt,300,30)
+
+def moveright(vertif):
+    ""
+    #x coord += 1
+    #check line
+    #check walls in line + coords
+    #for x in range (len(walls in line))
+        #if x = (xcoord of wall)
+            #don't move
+        #else:
+            #move
+            #column += 1
     
         
 def fengen():
