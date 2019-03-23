@@ -10,6 +10,7 @@ def creaboard(n,c):    ##----- Création du caneva -----##
     edge = board.create_rectangle(2,2,n*c+2,n*c+2)
 
 def mazesize():
+    check = 0
     str_n = size_form.get()
     n = int(str_n)
     
@@ -21,6 +22,12 @@ def mazesize():
         c = 10
     else:
         ADD.itemconfigure(scrolltxt, text = 'OUPS ! Il Faut Saisir Un Nombre Entier Entre 5 Et 80')
+        warning(0,"red")
+        check = 1
+    
+    if check == 0:
+        ADD.itemconfigure(scrolltxt, text = "C'est Parti ! Dirigez-Vous A L'aide Des Fleches")
+        warning(0,"spring green")
         
     return n,c
                 
@@ -161,7 +168,19 @@ def mazegen():
         tile = tileman(vtiles,walls,choicew,n)
         walls,walls2,vertif,horif= wallman(v,h,walls,walls2,tile,choicew,n,vertif, horif)
 
-    
+def warning(counter,color):
+    if counter >= 20:
+        ""
+    elif counter%2 == 0:
+        ADD.itemconfigure(line1, fill=color)
+        ADD.itemconfigure(line2, fill=color)
+        counter += 1
+        fen.after(250, lambda: warning(counter,color))
+    elif counter%2 == 1:
+        ADD.itemconfigure(line1, fill="black")
+        ADD.itemconfigure(line2, fill="black")
+        counter += 1
+        fen.after(250, lambda: warning(counter,color))    
 
 def moveobj(anim,x,y):
     d = 1
