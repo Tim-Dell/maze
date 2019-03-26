@@ -1,7 +1,7 @@
 ##----- Importation des Modules -----##
 from tkinter import *
 from random import *
-
+direction_id = 0
     
 def creaboard(n,c):    ##----- Création du caneva -----##
     global board
@@ -32,7 +32,7 @@ def mazesize():
     return n,c
                 
 
-def vertiwalls(c,n):
+def vertiwalls(c,n):    #création murs verticaux
     vertical = []
     for ligne in range(n):         
         for colonne in range(1,n):    
@@ -41,7 +41,7 @@ def vertiwalls(c,n):
     
     return vertical
 
-def horiwalls(c,n):        
+def horiwalls(c,n):        #création murs horizontaux
     horizontal = []   
     for ligne in range(1,n):         
         for colonne in range(n):    
@@ -50,42 +50,42 @@ def horiwalls(c,n):
     
     return horizontal
 
-def chooseinit(n):
+def chooseinit(n):      #choisi la case de départ
     begin = randint(0,n-1)*n
     return begin
 
-def initmaze(v,h,begin,n,c):    #to be added, choose end cell
-    walls = []
-    vtiles = []
-    walls2 = []
+def initmaze(v,h,begin,n,c):    #initialisation du labyrinthe
+    walls = []  #liste murs à visitée"
+    vtiles = [] #liste cases visitée"
+    walls2 = [] #liste de tout les murs ayant déjà été traité" #évite un double traitement a l'infini
     
-    vertif = []
-    horif = []
+    vertif = [] #liste des murs du labyrinthe à la fin"
+    horif = []  
     
     vtiles.append(begin)
     
-    walls.append( v[begin-begin//n] ) #adds right wall
+    walls.append( v[begin-begin//n] ) #ajoute le mur de droite aux murs à visité
     walls2.append(v[begin-begin//n] )
     if begin >= n:
-        walls.append( h[begin-n] )    #adds top wall
+        walls.append( h[begin-n] )    #du haut
         walls2.append(h[begin-n] )
     if begin < n*n-n:                       
-        walls.append( h[ begin ] )      #adds bottom wall
+        walls.append( h[ begin ] )      #d'en bas
         walls2.append(h[ begin ] )
     
     initsq = board.create_rectangle(2, (begin//n)*c+3, c+1, (begin//n)*c+c+1, \
-                                    outline = 'light pink', fill = 'light pink')
+                                    outline = 'light pink', fill = 'light pink')#première case
     end = randint(0,n-1)*n
     endsq = board.create_rectangle(n*c-c+3, (end//n)*c+3, n*c+3, (end//n)*c+c+1, \
-                                    outline = 'pale green', fill = 'pale green')
+                                   outline = 'pale green', fill = 'pale green') #dernière case
     return vtiles,walls,walls2, vertif, horif
 
-def choosewall(w):
+def choosewall(w):          #choisi le mur a traité
     x = randint(0,len(w)-1)
     return x
     
 
-def tileman(vt,w,x,n):                 
+def tileman(vt,w,x,n):         #gère le traitement des cases du labyrinthe        
 
     "----------horizontal---------"
         
@@ -122,7 +122,7 @@ def tileman(vt,w,x,n):
     return tile 
     
 
-def wallman(v,h,w,w2,t,x,n,vertif,horif):
+def wallman(v,h,w,w2,t,x,n,vertif,horif):   #gère le traitement des murs
 
     if t is None:
         if w[x] >= (n*n-n)+2:
@@ -134,27 +134,119 @@ def wallman(v,h,w,w2,t,x,n,vertif,horif):
     
     if t is not None:
         if t < n*n-n and h[t] not in w2:    #verifie exception
-            w.append(h[t])          #bottom wall
+            w.append(h[t])          #mur bas
             w2.append(h[t])
         
         if t >= n and h[t-n] not in w2:
-            w.append(h[t-n])        #top wall
+            w.append(h[t-n])        #mur haut
             w2.append(h[t-n])
 
         ###--###
 
         if t%n != 0 and v[t-(t//n)-1] not in w2:
-            w.append(v[t-(t//n)-1])  #left wall
+            w.append(v[t-(t//n)-1])  #mur gauche
             w2.append(v[t-(t//n)-1])
 
         
         if (t+1)%n != 0 and v[t-(t//n)] not in w2:
-            w.append(v[t-(t//n)])    #right wall
+            w.append(v[t-(t//n)])    #mur droit
             w2.append(v[t-(t//n)])
 
     return w,w2,vertif,horif
 
-def mazegen():
+def moveright(vertif,x0,x1,y0,y1,c,n):  #gère le mouvement vers la droite
+    move = 1
+    #x coord += 1
+    x0 += 1
+    x1 += 1
+    #check line
+    line = ((y0 + y1)/2)//c
+    #check walls in line + coords
+    for element in vertif:
+        if line*(n-1)+2 <= element and element < (line+1)*(n-1)+2:
+            x00,y00,x11,y11 = board.coords(element)
+            if x11 == x1:
+                move = 0
+    if move == 1:
+        board.coords(player, x0,y0,x1,y1)
+
+def moveleft(vertif,x0,x1,y0,y1,c,n):  #gère le mouvement vers la Gauche
+    move = 1
+    #x coord -= 1
+    x0 -= 1
+    x1 -= 1
+    #check line
+    line = ((y0 + y1)/2)//c
+    #check walls in line + coords
+    for element in vertif:
+        if line*(n-1)+2 <= element and element < (line+1)*(n-1)+2:
+            x00,y00,x11,y11 = board.coords(element)
+            if x00 == x0:
+                move = 0
+    if move == 1:
+        board.coords(player, x0,y0,x1,y1)
+
+def movedown(horif,x0,x1,y0,y1,c,n):  #gère le mouvement vers la Gauche
+    move = 1
+    #y coord += 1
+    y0 += 1
+    y1 += 1
+    #check column
+    column = ((x0 + x1)/2)//c
+    #check walls in column + coords
+    for element in horif:
+        if (element-n*(n-1)-2 - column)%n == 0:
+            x00,y00,x11,y11 = board.coords(element)
+            if y11 == y1:
+                move = 0
+    if move == 1:
+        board.coords(player, x0,y0,x1,y1)
+
+def moveup(horif,x0,x1,y0,y1,c,n):  #gère le mouvement vers la Gauche
+    move = 1
+    #y coord -= 1
+    y0 -= 1
+    y1 -= 1
+    #check column
+    column = ((x0 + x1)/2)//c
+    #check walls in column + coords
+    for element in horif:
+        if (element-n*(n-1)-2 - column)%n == 0:
+            x00,y00,x11,y11 = board.coords(element)
+            if y00 == y0:
+                move = 0
+    if move == 1:
+        board.coords(player, x0,y0,x1,y1)
+
+def key(event):
+    global direction_id
+    if event.keysym == 'Right':
+        direction_id = 1
+    if event.keysym == 'Down':
+        direction_id = 2
+    if event.keysym == 'Left':
+        direction_id = 3
+    if event.keysym == 'Up':
+        direction_id = 4
+
+def playerman(vertif,horif,c,n): #gère les déplacement du joueur
+    global direction_id
+
+    x0,y0,x1,y1 = board.coords(player)
+
+    if direction_id == 1:
+        moveright(vertif,x0,x1,y0,y1,c,n)
+    if direction_id == 2:
+        movedown(horif,x0,x1,y0,y1,c,n)
+    if direction_id == 3:
+        moveleft(vertif,x0,x1,y0,y1,c,n)
+    if direction_id == 4:
+        moveup(horif,x0,x1,y0,y1,c,n)
+        
+    direction_id = 0
+    fen.after(10, lambda: playerman(vertif,horif,c,n))
+
+def mazegen():      #genère le labyrinthe, enclenche ses fonctionallitées
     n,c = mazesize()
     ADD.configure( height = n*c-80)
     creaboard(n,c)
@@ -167,8 +259,15 @@ def mazegen():
         choicew = choosewall(walls)
         tile = tileman(vtiles,walls,choicew,n)
         walls,walls2,vertif,horif= wallman(v,h,walls,walls2,tile,choicew,n,vertif, horif)
+    
+    #Le jeu commence une fois generé
+    global player
+    player = board.create_rectangle(0.5*c, begin/n*c+0.5*c, 0.5*c+4, begin/n*c+0.5*c+4, \
+                                    outline = 'lavenderblush4', fill = 'lavenderblush4')
 
-def warning(counter,color):
+    playerman(vertif,horif,c,n)
+
+def warning(counter,color):     #animation
     if counter >= 20:
         ""
     elif counter%2 == 0:
@@ -182,7 +281,7 @@ def warning(counter,color):
         counter += 1
         fen.after(250, lambda: warning(counter,color))    
 
-def moveobj(anim,x,y):
+def moveobj(anim,x,y):      #animation
     d = 1
     XO = x-d
     if XO < -200:
@@ -190,31 +289,21 @@ def moveobj(anim,x,y):
     ADD.coords(anim,XO,y )                                                                   
     fen.after(20, lambda: moveobj(anim,XO,y))
 
-def ADDroll():
+def ADDroll():          #ajout d'interface
     global scrolltxt
+    global line1
+    global line2
     
-    ADD.create_text(100, 10, text='- - - - - - - -', \
+    line1 = ADD.create_text(100, 10, text='- - - - - - - -', \
                        fill='black', font='System 30')
     scrolltxt = ADD.create_text(300, 30, text='Entrer La Taille Du Labyrinthe Ou La Commande', \
                        fill='black', font='System 10')
-    ADD.create_text(100, 50, text='- - - - - - - -', \
+    line2 = ADD.create_text(100, 50, text='- - - - - - - -', \
                        fill='black', font='System 30')
     moveobj(scrolltxt,300,30)
-
-def moveright(vertif):
-    ""
-    #x coord += 1
-    #check line
-    #check walls in line + coords
-    #for x in range (len(walls in line))
-        #if x = (xcoord of wall)
-            #don't move
-        #else:
-            #move
-            #column += 1
-    
+ 
         
-def fengen():
+def fengen():   #génère la fenêtre de jeu
     global fen
     global size_form
     global ADD
@@ -234,13 +323,15 @@ def fengen():
     bouton_quitter = Button(fen, text='Quitter', command=fen.destroy)
     bouton_quitter.grid(row = 3, column = 1, sticky=W+E, padx=3, pady=3)
 
+    fen.bind('<Right>' , key)
+    fen.bind('<Down>' , key)
+    fen.bind('<Left>' , key)
+    fen.bind('<Up>' , key)
 
     fen.mainloop()
-
-
-
 
 ##----- Programme principal -----##
 
 fengen()
+
 
