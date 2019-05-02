@@ -1,5 +1,6 @@
 ##----- Importation des Modules -----##
 from tkinter import *
+from functools import partial
 from random import *
 from enum import Enum
 direction_id = 0
@@ -10,7 +11,9 @@ def creaboard(n,c):    ##----- Création du caneva -----##
     board.grid(row = 0, column = 0, rowspan=4, padx=3, pady=3)
     edge = board.create_rectangle(2,2,n*c+2,n*c+2)
 
+
 def mazesize():
+    global c
     check = 0
     str_n = size_form.get()
     n = int(str_n)
@@ -50,11 +53,6 @@ def horiwalls(c,n):        #création murs horizontaux
                     (c*colonne+2,ligne*c+2,c*colonne+2+c,ligne*c+2 ))
     
     return horizontal
-
-def chooseinit(n):      #choisi la case de départ
-    begin = randint(0,n-1)*n
-    end = randint(0,n-1)*n
-    return (begin,end)
 
 def initmaze(v,h,begin,end,n,c):    #initialisation du labyrinthe
     walls = []  #liste murs à visitée"
@@ -247,12 +245,13 @@ def playerman(vertif,horif,c,n): #gère les déplacement du joueur
     fen.after(10, lambda: playerman(vertif,horif,c,n))
 
 def mazegen():      #genère le labyrinthe, enclenche ses fonctionallitées
+    global solve
     n,c = mazesize()
     ADD.configure( height = n*c-80)
     creaboard(n,c)
     v = vertiwalls(c,n)
     h = horiwalls(c,n)
-    (begin, end)= chooseinit(n)
+    (begin, end)= (0,(n-1)*n)
     vtiles,walls,walls2, vertif, horif = initmaze (v,h,begin,end, n,c)
 
     while len(walls) > 0:
@@ -262,8 +261,6 @@ def mazegen():      #genère le labyrinthe, enclenche ses fonctionallitées
 
     grid = grid_gen(vertif, horif, n)
     solve = dfs_solver(grid, n, begin//n, 0, end, begin)
-    tracer = solve_tracer(solve, c)
-    
     #Le jeu commence une fois generé
     global player
     player = board.create_rectangle(0.5*c, begin/n*c+0.5*c, 0.5*c+4, begin/n*c+0.5*c+4, \
@@ -356,6 +353,7 @@ def solve_tracer(solution, c): #permet de retracer le chemin de la solution
         trace =  board.create_rectangle((y+0.5)*c, (x+0.5)*c, (y+0.5)*c+4, (x+0.5)*c+4, \
                                     outline = 'red', fill = 'red')
 
+
 def warning(counter,color):     #animation
     if counter >= 20:
         ""
@@ -382,7 +380,6 @@ def ADDroll():          #ajout d'interface
     global scrolltxt
     global line1
     global line2
-    
     line1 = ADD.create_text(100, 10, text='- - - - - - - -', \
                        fill='black', font='System 30')
     scrolltxt = ADD.create_text(300, 30, text='Entrer La Taille Du Labyrinthe Ou La Commande', \
@@ -396,13 +393,15 @@ def fengen():   #génère la fenêtre de jeu
     global fen
     global size_form
     global ADD
+    global solve
+    global c
     fen = Tk()
     fen.title('Maze')
     
     bouton_gen = Button(fen, text = "Generate", command = mazegen)
     bouton_gen.grid(row = 0, column = 1, sticky=W+E, padx=3, pady=3)
 
-    bouton_solution_trace = Button(fen, text = "Solution", command = '')
+    bouton_solution_trace = Button(fen, text = "Solution", command = lambda: solve_tracer(solve,c))
     bouton_solution_trace.grid(row = 4, column = 1, sticky=W+E, padx=3, pady=3)
 
     size_form = Entry(fen, textvariable=StringVar())
