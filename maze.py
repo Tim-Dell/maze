@@ -4,6 +4,8 @@ from functools import partial
 from random import *
 from enum import Enum
 direction_id = 0
+fen = Tk()
+fen.counter = 0
     
 def creaboard(n,c):    ##----- Création du caneva -----##
     global board
@@ -246,12 +248,16 @@ def playerman(vertif,horif,c,n): #gère les déplacement du joueur
 
 def mazegen():      #genère le labyrinthe, enclenche ses fonctionallitées
     global solve
+    fen.counter += 1
+    if fen.counter >= 2:
+        board.delete("all")
     n,c = mazesize()
     ADD.configure( height = n*c-80)
     creaboard(n,c)
     v = vertiwalls(c,n)
     h = horiwalls(c,n)
     (begin, end)= (0,(n-1)*n)
+
     vtiles,walls,walls2, vertif, horif = initmaze (v,h,begin,end, n,c)
 
     while len(walls) > 0:
@@ -387,7 +393,8 @@ def ADDroll():          #ajout d'interface
     line2 = ADD.create_text(100, 50, text='- - - - - - - -', \
                        fill='black', font='System 30')
     moveobj(scrolltxt,300,30)
- 
+
+#conmpte le nombre de click sur le boutton 'generate'
         
 def fengen():   #génère la fenêtre de jeu
     global fen
@@ -395,7 +402,6 @@ def fengen():   #génère la fenêtre de jeu
     global ADD
     global solve
     global c
-    fen = Tk()
     fen.title('Maze')
     
     bouton_gen = Button(fen, text = "Generate", command = mazegen)
