@@ -3,19 +3,22 @@ from tkinter import *
 from functools import partial
 from random import *
 from enum import Enum
-direction_id = 0
-fen = Tk()
-fen.counter = 0
+
+#--variables--#
+repeat = 0
     
 def creaboard(n,c):    ##----- Création du caneva -----##
     global board
+    global repeat
+    if repeat == 1:
+        board.destroy()
     board = Canvas(fen, width = n*c+2, height = n*c+2, bg = 'white')
-    board.grid(row = 0, column = 0, rowspan=4, padx=3, pady=3)
+    board.grid(row = 0, column = 0, rowspan=5, padx=3, pady=3)
     edge = board.create_rectangle(2,2,n*c+2,n*c+2)
+    repeat = 1
 
 
 def mazesize():
-    global c
     check = 0
     str_n = size_form.get()
     n = int(str_n)
@@ -60,12 +63,12 @@ def initmaze(v,h,begin,end,n,c):    #initialisation du labyrinthe
     walls = []  #liste murs à visitée"
     vtiles = [] #liste cases visitée"
     walls2 = [] #liste de tout les murs ayant déjà été traité" #évite un double traitement a l'infini
-    vertif = [] #liste des murs du labyrinthe à la fin"
+    vertif = [] #listes des murs du labyrinthe à la fin"
     horif = []  
     
     vtiles.append(begin)
     
-    walls.append( v[begin-begin//n] ) #ajoute le mur de droite aux murs à visité
+    walls.append( v[begin-begin//n] ) #ajoute le mur de droite aux murs à visiter
     walls2.append(v[begin-begin//n] )
     if begin >= n:
         walls.append( h[begin-n] )    #du haut
@@ -157,15 +160,15 @@ def wallman(v,h,w,w2,t,x,n,vertif,horif):   #gère le traitement des murs
 def moveright(vertif,x0,x1,y0,y1,c,n):  #gère le mouvement vers la droite
     move = 1
     #x coord += 1
-    x0 += 1
-    x1 += 1
+    x0 += c
+    x1 += c
     #check line
     line = ((y0 + y1)/2)//c
     #check walls in line + coords
     for element in vertif:
         if line*(n-1)+2 <= element and element < (line+1)*(n-1)+2:
             x00,y00,x11,y11 = board.coords(element)
-            if x11 == x1:
+            if x11 == x1-(c/2)-2 or x1-(c/2)-2 == n*c+2:
                 move = 0
     if move == 1:
         board.coords(player, x0,y0,x1,y1)
@@ -173,15 +176,15 @@ def moveright(vertif,x0,x1,y0,y1,c,n):  #gère le mouvement vers la droite
 def moveleft(vertif,x0,x1,y0,y1,c,n):  #gère le mouvement vers la Gauche
     move = 1
     #x coord -= 1
-    x0 -= 1
-    x1 -= 1
+    x0 -= c
+    x1 -= c
     #check line
     line = ((y0 + y1)/2)//c
     #check walls in line + coords
     for element in vertif:
         if line*(n-1)+2 <= element and element < (line+1)*(n-1)+2:
             x00,y00,x11,y11 = board.coords(element)
-            if x00 == x0:
+            if x00 == x0+(c/2)+2 or x0+(c/2)+2 == 2:
                 move = 0
     if move == 1:
         board.coords(player, x0,y0,x1,y1)
@@ -189,15 +192,15 @@ def moveleft(vertif,x0,x1,y0,y1,c,n):  #gère le mouvement vers la Gauche
 def movedown(horif,x0,x1,y0,y1,c,n):  #gère le mouvement vers la Gauche
     move = 1
     #y coord += 1
-    y0 += 1
-    y1 += 1
+    y0 += c
+    y1 += c
     #check column
     column = ((x0 + x1)/2)//c
     #check walls in column + coords
     for element in horif:
         if (element-n*(n-1)-2 - column)%n == 0:
             x00,y00,x11,y11 = board.coords(element)
-            if y11 == y1:
+            if y11 == y1-(c/2)-2 or y1-(c/2)-2 == n*c+2:
                 move = 0
     if move == 1:
         board.coords(player, x0,y0,x1,y1)
@@ -205,15 +208,15 @@ def movedown(horif,x0,x1,y0,y1,c,n):  #gère le mouvement vers la Gauche
 def moveup(horif,x0,x1,y0,y1,c,n):  #gère le mouvement vers la Gauche
     move = 1
     #y coord -= 1
-    y0 -= 1
-    y1 -= 1
+    y0 -= c
+    y1 -= c
     #check column
     column = ((x0 + x1)/2)//c
     #check walls in column + coords
     for element in horif:
         if (element-n*(n-1)-2 - column)%n == 0:
             x00,y00,x11,y11 = board.coords(element)
-            if y00 == y0:
+            if y00 == y0+(c/2)+2 or y0+(c/2)+2 == 2:
                 move = 0
     if move == 1:
         board.coords(player, x0,y0,x1,y1)
@@ -229,11 +232,19 @@ def key(event):
     if event.keysym == 'Up':
         direction_id = 4
 
-def playerman(vertif,horif,c,n): #gère les déplacement du joueur
+def playerman(vertif,horif,c,n,end): #gère les déplacement du joueur
     global direction_id
+    global Win
 
     x0,y0,x1,y1 = board.coords(player)
 
+    if x1 > n*c-c+3 and y1 > (end//n)*c+3:
+        for element in Win:
+            ADD.itemconfigure(element, fill='medium violet red')
+    if x1 < n*c-c+3 or y1 < (end//n)*c+3:
+        for element in Win:
+            ADD.itemconfigure(element, fill='white')
+            
     if direction_id == 1:
         moveright(vertif,x0,x1,y0,y1,c,n)
     if direction_id == 2:
@@ -244,35 +255,40 @@ def playerman(vertif,horif,c,n): #gère les déplacement du joueur
         moveup(horif,x0,x1,y0,y1,c,n)
         
     direction_id = 0
-    fen.after(10, lambda: playerman(vertif,horif,c,n))
+    fen.after(10, lambda: playerman(vertif,horif,c,n,end))
 
 def mazegen():      #genère le labyrinthe, enclenche ses fonctionallitées
-    global solve
-    fen.counter += 1
-    if fen.counter >= 2:
-        board.delete("all")
+    global repeat
     n,c = mazesize()
-    ADD.configure( height = n*c-80)
+    ADD.configure( height = n*c-120)
+    if repeat == 0:
+        Wintxt()
     creaboard(n,c)
     v = vertiwalls(c,n)
     h = horiwalls(c,n)
     (begin, end)= (0,(n-1)*n)
-
     vtiles,walls,walls2, vertif, horif = initmaze (v,h,begin,end, n,c)
-
+    
     while len(walls) > 0:
         choicew = choosewall(walls)
-        tile = tileman(vtiles,walls,choicew,n)
+        tile = tileman(vtivles,walls,choicew,n)
         walls,walls2,vertif,horif = wallman(v,h,walls,walls2,tile,choicew,n,vertif, horif)
-
+        #board.update()
+        
+    #active la possibilitée de montrer la solution
     grid = grid_gen(vertif, horif, n)
     solve = dfs_solver(grid, n, begin//n, 0, end, begin)
+    bouton_solution_trace = Button(fen, text = "Solution", command = lambda: solve_tracer(solve,c))
+    bouton_solution_trace.grid(row = 3, column = 1, sticky=W+E, padx=3, pady=3)
+
     #Le jeu commence une fois generé
     global player
+    global direction_id
+    direction_id = 0
     player = board.create_rectangle(0.5*c, begin/n*c+0.5*c, 0.5*c+4, begin/n*c+0.5*c+4, \
-                                    outline = 'lavenderblush4', fill = 'lavenderblush4')
+                                    outline = 'midnight blue', fill = 'midnight blue')
 
-    playerman(vertif,horif,c,n)
+    playerman(vertif,horif,c,n,end)
 
 def grid_gen(vertif, horif, n): #retranscrit le labyrinthe sous forme d'une grille
     grid = []
@@ -356,8 +372,9 @@ def dfs_solver(grid, n, i, j , end, begin, visited=set(), sol=[]): #algorithme d
 
 def solve_tracer(solution, c): #permet de retracer le chemin de la solution
     for (x, y) in (solution):
-        trace =  board.create_rectangle((y+0.5)*c, (x+0.5)*c, (y+0.5)*c+4, (x+0.5)*c+4, \
+        trace =  board.create_rectangle((y+0.5)*c-1, (x+0.5)*c-1, (y+0.5)*c+5, (x+0.5)*c+5, \
                                     outline = 'red', fill = 'red')
+    board.tag_raise(player)
 
 
 def warning(counter,color):     #animation
@@ -374,13 +391,13 @@ def warning(counter,color):     #animation
         counter += 1
         fen.after(250, lambda: warning(counter,color))    
 
-def moveobj(anim,x,y):      #animation
+def moveobj(anim,x,y,speed):      #animation
     d = 1
     XO = x-d
     if XO < -200:
         XO += 500
     ADD.coords(anim,XO,y )                                                                   
-    fen.after(20, lambda: moveobj(anim,XO,y))
+    fen.after(speed, lambda: moveobj(anim,XO,y,speed))
 
 def ADDroll():          #ajout d'interface
     global scrolltxt
@@ -392,23 +409,30 @@ def ADDroll():          #ajout d'interface
                        fill='black', font='System 10')
     line2 = ADD.create_text(100, 50, text='- - - - - - - -', \
                        fill='black', font='System 30')
-    moveobj(scrolltxt,300,30)
+    moveobj(scrolltxt,300,30,20)
 
-#conmpte le nombre de click sur le boutton 'generate'
+def Wintxt():
+    global Win
+    Win=[]
+    for i in range(30):
+            d = i*5
+            i = i*20
+            Wintxt=ADD.create_text(10+d, 70+i, text='YOU WIN - YOU WIN - YOU WIN - YOU WIN - YOU WIN', \
+                       fill='white', font='System 25')
+            Win.append(Wintxt)
+            ADD.update()
+            moveobj(Wintxt,10+d,70+i,7)
+ 
         
 def fengen():   #génère la fenêtre de jeu
     global fen
     global size_form
     global ADD
-    global solve
-    global c
+    fen = Tk()
     fen.title('Maze')
     
     bouton_gen = Button(fen, text = "Generate", command = mazegen)
     bouton_gen.grid(row = 0, column = 1, sticky=W+E, padx=3, pady=3)
-
-    bouton_solution_trace = Button(fen, text = "Solution", command = lambda: solve_tracer(solve,c))
-    bouton_solution_trace.grid(row = 4, column = 1, sticky=W+E, padx=3, pady=3)
 
     size_form = Entry(fen, textvariable=StringVar())
     size_form.grid(row = 1, column = 1, sticky=W+E, padx=3, pady=3)
@@ -418,7 +442,7 @@ def fengen():   #génère la fenêtre de jeu
     ADDroll()
 
     bouton_quitter = Button(fen, text='Quitter', command=fen.destroy)
-    bouton_quitter.grid(row = 3, column = 1, sticky=W+E, padx=3, pady=3)
+    bouton_quitter.grid(row = 4, column = 1, sticky=W+E, padx=3, pady=3)
 
     fen.bind('<Right>' , key)
     fen.bind('<Down>' , key)
@@ -430,3 +454,4 @@ def fengen():   #génère la fenêtre de jeu
 ##----- Programme principal -----##
 
 fengen()
+
