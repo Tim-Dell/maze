@@ -271,7 +271,7 @@ def mazegen():      #genère le labyrinthe, enclenche ses fonctionallitées
     
     while len(walls) > 0:
         choicew = choosewall(walls)
-        tile = tileman(vtivles,walls,choicew,n)
+        tile = tileman(vtiles,walls,choicew,n)
         walls,walls2,vertif,horif = wallman(v,h,walls,walls2,tile,choicew,n,vertif, horif)
         #board.update()
         
